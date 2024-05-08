@@ -1,0 +1,67 @@
+In this video we'll use a simple pendulum example to demonstrate how you can use a common filter to estimate the pendulum's angular position in Simulink.
+
+In this system, we're interested in observing the angular position theta. Let's assume that we can measure this angle with a sensor such as a rotary potential angle. Although we can measure theta, our measurements will be noisy. In order to filter out the noise and get a good estimate of theta, we're going to use a Kalman Filter.
+
+Before we switch to Simulink, let's look at the free body diagram and equation of motion of the pendulum. For the pendulum model, we will assume zero friction.
+
+Imagine that the pendulum is connected to a rigid rod and we initiate it at an angle. And when we let it go, it starts to swing back and forth.
+
+Note that there is a nonlinear term associated with the angular position. If you look at the plot of the function, we see that for small values of theta, this function almost acts linearly. Therefore, for small angles we can linearize this equation and write that on this form.
+
+Next, we can represent this system in state space form, where we choose the first state as angular position and the second one as angular velocity.
+
+We define the parameters and state space model in this script. As we mentioned before, we're interested in estimating theta through a Kalman Filter, because the measurement of theta is noisy.
+
+You can use either MATLAB or Simulink to implement a linear time invariant or time variant Kalman Filter. Here, for estimating the angular position of the pendulum, we will use Simulink.
+
+We start by dragging this prebuilt pendulum block into our model. This is created using Simscape Multibody, which lets us define a mechanical system using components such as bodies, joints, force elements, and sensors. It then solves for the equations of motion for the mechanical system.
+
+Here, we modeled the pendulum by connecting a fixed pivot with a link through a revolute joint. We can also look at these in the mechanics explorer.
+
+In these blocks, we define dimensions, mass, and inertial properties of the bodies. The driving torque acting on the joint is the sum of these two signals. And we output the joint position, theta, through the revolute joint block.
+
+Feel free to download this Simulink model from the link in this video's description if you want to look at the inside of the blocks. As we've just seen, this block takes two units.
+
+The first input is the applied torque, which we will set to zero. The second input is the process noise. In this example, we will assume that process noise exists only on the angular acceleration.
+
+The covariance of the process noise was defined in the script. So we enter this value into our block. We set the initial conditions for the states by double clicking the pendulum block.
+
+We'll start the pendulum at 10 degrees, which corresponds to pi over 18 radius. And we'll initiate it at 0 angular velocity.
+
+The pendulum block's output is the angular position, which is assumed to be measured with a sensor. We'll expect the sensor readings to have some noise, which we'll simulate using this noise block.
+
+Similar to what we've done with the process noise, we are defining the noise characteristics using the covariance, R. Now, we have the actual and measured values of theta. Next, we want to estimate theta using the Kalman Filter.
+
+We add the Kalman filter block from control system toolbox to our model. This block computes the Kalman Filter algorithm equations, which we discuss in the previous videos.
+
+It uses the system model and the measurement and solves for the Kalman gain by minimizing the error covariance p, and outputs the optimal state estimates.
+
+For our example, we will use continuous time estimation. But note that if you want to run the estimation on a microprocessor in real time, then you can use the script time Kalman Filter, generate CC++ code for this block, and deploy it to your hardware.
+
+This block takes a system model, which we will define in the script, along with the input to it, and it also uses the measurement.
+
+In the pendulum model, we use an initial conditional pi over 18 radius for the angular position. Here, we'll assume that we know only approximately and enter a slightly different number to investigate how the Kalman Filter estimate will co-merge when the initial conditions are not known exactly. Other parameters that we need to configure are our noise covariance matrices, which we choose to be the same as in the pendulum system.
+
+Note that the pendulum system has two states. So the process noise covariance is a 2 by 2 matrix. But since we're assuming that the process noise acts on the angular acceleration only, we entered associated term noted in the covariance matrix as 0.
+
+Next, we enter the measurement covariance. The cross covariance matrix, n, is used to capture the correlation between the process and measurement noise. In our example they are uncorrelated. So n is 0.
+
+Also, note that you can specify the covariance matrices as time variant by unchecking the box next to them. If unchecked, the block adds an additional input for the time variant covariance.
+
+Next, we run the script and the Simulink model and look at this negative theta through the Kalman Filter. One thing to note is that the pendulum model used in this block includes the nonlinear term sine of theta.
+
+But the Kalman Filter uses the linearized system. However, we still expect the Kalman Filter to work well, because we initialize theta with a small value. So the pendulum model almost acts linearly.
+
+Let's look at the simulation results. We assumed perfect knowledge of the pendulum model, whose output, the actual theta is shown with the green line. The noise is the signal that is shown in orange is the measurement. And estimated theta is shown in blue.
+
+This estimate shows us that Kalman Filter filters out the noise. And although its initial conditions slightly differ from the model itself, we see that the Kalman Filter converges in approximately five seconds and provides a good estimate of the pendulum's angular position.
+
+In this video we've simulated the pendulum system, and estimated its angular position using a Kalman Filter. We assumed perfect knowledge of the system model, and processed at noise covariance matrices Q and R. But in case you don't know the system parameters, or the sensor characteristics exactly, then this simulation gives you an opportunity to play with your model parameters, as well as noise covariance matrices, and observe and improve your state estimation.
+
+In this simulation we initialize theta with a small value of 10 degrees and observe the good estimate through Kalman Filter. What if you use a larger value of theta?
+
+If we now increase the initial value of theta to 90 degrees, both in the pendulum model and the Kalman Filter, and then simulate the model, we get a a poor estimation of theta.
+
+This is because for larger values of theta, the pendulum model acts nonlinearly. And a Kalman Filter is only defined for linear systems. As we discussed in the previous video, this problem can be addressed by using an extended Kalman Filter.
+
+In the next video, we will use the same pendulum model and demonstrate how you can use an extended Kalman Filter in Simulink.
